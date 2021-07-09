@@ -1,8 +1,8 @@
-package com.bisht.runningapp
+package com.bisht.runningapp.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import com.bisht.runningapp.R
 import com.bisht.runningapp.db.RunDAO
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
