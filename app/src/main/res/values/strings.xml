@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">RunningApp</string>
     <string name="google_maps_key">AIzaSyC4O2DEq_k7S9KAxEDRSrZQpj2yC0TqnEc</string>
+    <string name="running_app">Running App</string>
+    <string name="welcome_nplease_enter_your_name_and_weight">Welcome!\nPlease enter your name and weight.</string>
+    <string name="fab">FAB</string>
+    <string name="sort_by">Sort by:</string>
 </resources>
