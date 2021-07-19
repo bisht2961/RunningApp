@@ -47,6 +47,9 @@ typealias PolyLines = MutableList<PolyLine>
 @AndroidEntryPoint
 class TrackingService: LifecycleService() {
 
+    var isFirstRun = true
+    var serviceKilled = false
+
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     @Inject
@@ -54,7 +57,6 @@ class TrackingService: LifecycleService() {
 
     lateinit var curNotifictionBuilder: NotificationCompat.Builder
     private val timeRunInSeconds = MutableLiveData<Long>()
-    var isFirstRun = true
 
     companion object {
         val isTracking = MutableLiveData<Boolean>()
@@ -74,8 +76,16 @@ class TrackingService: LifecycleService() {
 
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    private fun killService(){
+        serviceKilled = true
+        isFirstRun = true
+        pauseService()
+        postInitialValues()
+        stopForeground(true)
+        stopSelf()
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             when(it.action){
                 ACTION_START_OR_RESUME_SERVICE ->{
@@ -93,6 +103,7 @@ class TrackingService: LifecycleService() {
                 }
                 ACTION_STOP_SERVICE ->{
                     Timber.d("Stopped service")
+                    killService()
                 }
             }
         }
@@ -150,15 +161,16 @@ class TrackingService: LifecycleService() {
             }
             PendingIntent.getService(this,2, resumIntent, FLAG_UPDATE_CURRENT)
         }
-
         val notificationManager = getSystemService( Context.NOTIFICATION_SERVICE) as NotificationManager
         curNotifictionBuilder.javaClass.getDeclaredField("mActions").apply {
             isAccessible = true
             set(curNotifictionBuilder, ArrayList<NotificationCompat>())
         }
-        curNotifictionBuilder = baseNotificationBuilder
-            .addAction(R.drawable.ic_pause_black_24dp, notificationActionText, pendingIntent)
-        notificationManager.notify(NOTIFICATION_ID,curNotifictionBuilder.build())
+        if(!serviceKilled){
+            curNotifictionBuilder = baseNotificationBuilder
+                .addAction(R.drawable.ic_pause_black_24dp, notificationActionText, pendingIntent)
+            notificationManager.notify(NOTIFICATION_ID,curNotifictionBuilder.build())
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -218,9 +230,11 @@ class TrackingService: LifecycleService() {
         }
         startForeground(NOTIFICATION_ID,baseNotificationBuilder.build())
         timeRunInSeconds.observe(this, Observer {
-            val notification = curNotifictionBuilder
-                .setContentText(TrackingUtility.getFormattedStopWatchTime(it*1000))
-            notificationManager.notify(NOTIFICATION_ID,notification.build())
+            if(!serviceKilled){
+                val notification = curNotifictionBuilder
+                    .setContentText(TrackingUtility.getFormattedStopWatchTime(it*1000))
+                notificationManager.notify(NOTIFICATION_ID,notification.build())
+            }
         })
     }
 
@@ -232,6 +246,5 @@ class TrackingService: LifecycleService() {
         IMPORTANCE_LOW
         )
         notificationManager.createNotificationChannel(channel)
-
     }
 }

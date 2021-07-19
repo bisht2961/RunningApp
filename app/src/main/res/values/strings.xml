@@ -11,6 +11,7 @@
     <string name="settings">Settings</string>
     <string name="statistics">Statistics</string>
     <string name="yours_run">Yours Run</string>
+    <string name="cancel_run">Cancel Run</string>
     <string-array name="filter_options">
         <item>Date</item>
         <item>Running Time</item>
