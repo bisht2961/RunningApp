@@ -1,4 +1,4 @@
-package com.bisht.runningapp.adapters
+ package com.bisht.runningapp.adapters
 
 import android.view.LayoutInflater
 import android.view.View

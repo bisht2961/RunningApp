@@ -56,7 +56,6 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
             SortType.DISTANCE -> binding.spFilter.setSelection(2)
             SortType.AVG_SPEED -> binding.spFilter.setSelection(3)
             SortType.CALORIES_BURNED -> binding.spFilter.setSelection(4)
-
         }
         binding.spFilter.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
             override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, pos: Int, id: Long) {
