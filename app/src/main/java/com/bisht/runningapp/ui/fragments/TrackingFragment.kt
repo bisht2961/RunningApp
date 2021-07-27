@@ -15,6 +15,7 @@ import com.bisht.runningapp.db.Run
 import com.bisht.runningapp.other.Constants.ACTION_PAUSE_SERVICE
 import com.bisht.runningapp.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.bisht.runningapp.other.Constants.ACTION_STOP_SERVICE
+import com.bisht.runningapp.other.Constants.CANCEL_TRACKING_DIALGO_TAG
 import com.bisht.runningapp.other.Constants.MAP_ZOOM
 import com.bisht.runningapp.other.Constants.POLYLINE_COLOR
 import com.bisht.runningapp.other.Constants.POLYLINE_WIDTH
@@ -73,6 +74,13 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking){
             map = it
             addAllPolyLine()
         }
+        if(savedInstanceState != null ){
+            val cancelTrackingDialog = parentFragmentManager.findFragmentByTag(
+                CANCEL_TRACKING_DIALGO_TAG) as CancelTrackingDialog?
+            cancelTrackingDialog?.setYesListener {
+                stopRun()
+            }
+        }
         subscribeToObserver()
         
     }
@@ -116,6 +124,7 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking){
     }
 
     private fun stopRun(){
+        binding.tvTimer.setText("00:00:00:00")
         sendCommandService(ACTION_STOP_SERVICE)
         findNavController().navigate(R.id.action_trackingFragment_to_runFragment)
     }
@@ -130,25 +139,19 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking){
     }
 
     private fun showCancelTracking(){
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Cancel the Run")
-            .setMessage("Are you sure")
-            .setPositiveButton("Yes"){_, _ ->
-                stopRun()
-            }
-            .setNegativeButton("No"){ dialogInterface, _ ->
-                dialogInterface.cancel()
-            }
-            .create()
-        dialog.show()
+       CancelTrackingDialog().apply {
+           setYesListener {
+               stopRun()
+           }
+       }.show(parentFragmentManager, CANCEL_TRACKING_DIALGO_TAG)
     }
 
     private fun updateTracking(isTracking: Boolean ){
         this.isTracking = isTracking
-        if(!isTracking){
+        if(!isTracking && curTimeMillis > 0L ){
             binding.btnToggleRun.text = "Start"
             binding.btnFinishRun.visibility = View.VISIBLE
-        }else{
+        }else if(isTracking){
             binding.btnToggleRun.text = "Stop"
             menu?.getItem(0)?.isVisible = true
             binding.btnFinishRun.visibility = View.GONE
